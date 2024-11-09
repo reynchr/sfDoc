@@ -1,1 +1,7 @@
-salesforce-analyzer --project-path /Users/reynchr/VSC\ Projects/ciTarget analyze --objects Account
+1. Create Shell
+
+    poetry shell
+
+2. Run Analyzer
+
+    salesforce-analyzer --project-path /Users/reynchr/VSC\ Projects/ciTarget analyze --objects Account
