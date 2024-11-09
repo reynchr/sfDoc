@@ -1,6 +1,6 @@
 # Salesforce Org Analyzer
 
-A comprehensive tool for analyzing and documenting Salesforce org metadata, execution paths, and automations using AI-powered analysis.
+A comprehensive tool for analyzing and documenting Salesforce org metadata, execution paths, and automations using AI-powered analysis. Features enhanced Apex parsing capabilities and detailed execution path tracking.
 
 ## System Requirements
 - macOS 12.0 or later
@@ -8,6 +8,25 @@ A comprehensive tool for analyzing and documenting Salesforce org metadata, exec
 - At least 16GB RAM
 - 20GB free disk space (for Python packages and ML models)
 - Internet connection for initial setup
+
+## Enhanced Features
+
+### Advanced Apex Parsing
+- Complete class structure analysis including properties and inner classes
+- Annotation parsing with parameter support
+- Detailed method analysis including:
+  - DML operations tracking
+  - SOQL query parsing
+  - Method call hierarchies
+  - Documentation comment extraction
+- Sharing rules detection
+- Collection type support (List, Set, Map, Arrays)
+
+### Code Analysis
+- Execution path tracking across all automation types
+- Recursion detection
+- Entry point mapping
+- Cross-object dependency tracking
 
 ## Project Structure
 ```
@@ -17,6 +36,10 @@ salesforce-analyzer/
 │   │   ├── __init__.py
 │   │   ├── parser.py          # Enhanced Apex parsing logic
 │   │   └── analyzer.py        # Apex code analysis
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── apex_models.py     # Data models for Apex components
+│   │   └── analysis_models.py # Analysis result models
 │   ├── automations/
 │   │   ├── __init__.py
 │   │   ├── process_builder.py # Process Builder analysis
@@ -35,206 +58,176 @@ salesforce-analyzer/
 ├── tests/                     # Test files for each module
 ├── config/
 │   └── default_config.yaml    # Configuration settings
-├── requirements.txt           # Python dependencies
-├── setup.py                   # Package installation
-└── README.md                  # This documentation
+├── pyproject.toml            # Poetry configuration
+├── poetry.lock              # Poetry lock file
+└── README.md                # This documentation
 ```
 
 ## Setup Instructions
 
-### 1. Check Current System State
+### 1. Environment Setup
 
+First, ensure you have Python 3.8+ installed:
 ```bash
-# Create and run the system check script
-cat << 'EOF' > check_system.sh
-#!/bin/bash
-
-echo "Checking system requirements..."
-
-# Check macOS version
-os_version=$(sw_vers -productVersion)
-echo "macOS Version: $os_version"
-if [[ $os_version < "12.0" ]]; then
-    echo "⚠️  Warning: macOS 12.0 or later recommended"
-fi
-
-# Check Python installation
-if command -v python3 &>/dev/null; then
-    python_version=$(python3 --version)
-    echo "✅ Python installed: $python_version"
-else
-    echo "❌ Python not installed"
-fi
-
-# Check Homebrew installation
-if command -v brew &>/dev/null; then
-    brew_version=$(brew --version | head -n 1)
-    echo "✅ Homebrew installed: $brew_version"
-else
-    echo "❌ Homebrew not installed"
-fi
-
-# Check available RAM
-total_ram=$(sysctl hw.memsize | awk '{print $2}')
-ram_gb=$((total_ram / 1024 / 1024 / 1024))
-echo "Available RAM: ${ram_gb}GB"
-if [[ $ram_gb -lt 16 ]]; then
-    echo "⚠️  Warning: 16GB RAM or more recommended"
-fi
-
-# Check available disk space
-free_space=$(df -h / | awk 'NR==2 {print $4}' | sed 's/Gi//')
-echo "Available disk space: ${free_space}GB"
-if [[ $free_space -lt 20 ]]; then
-    echo "⚠️  Warning: 20GB free space recommended"
-fi
-EOF
-
-chmod +x check_system.sh
-./check_system.sh
+python3 --version
 ```
 
-### 2. Install Required Software
-
-If Homebrew is not installed:
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-If Python is not installed:
-```bash
-brew install python@3.10
-```
-
-Install Poetry (Python dependency management):
+Install Poetry (dependency management):
 ```bash
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-### 3. Clone and Setup Project
+### 2. Project Installation
 
+Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/your-repo/salesforce-analyzer.git
+git clone https://github.com/your-org/salesforce-analyzer.git
 cd salesforce-analyzer
+```
 
-# Install dependencies using Poetry
+Install dependencies using Poetry:
+```bash
 poetry install
 ```
 
-### 4. Configure Environment
+### 3. Configuration
 
-```bash
-# Create virtual environment and install dependencies
-poetry shell
-
-# Configure GPU support (if available)
-# Check if you have an NVIDIA GPU
-system_profiler SPDisplaysDataType | grep NVIDIA
-
-# If NVIDIA GPU is present, install CUDA support
-brew install cuda
-```
-
-### 5. Verify Installation
-
-```bash
-# Run the verification script
-poetry run python -m salesforce_analyzer.verify
+Create a configuration file at `config/default_config.yaml`:
+```yaml
+analysis:
+  parser:
+    include_inner_classes: true
+    parse_annotations: true
+    track_dml: true
+    track_soql: true
+    parse_doc_comments: true
+  
+  execution:
+    max_depth: 10
+    include_workflow: true
+    include_process_builder: true
+    include_flows: true
+    
+  visualization:
+    diagram_type: mermaid
+    include_conditions: true
+    show_dml_operations: true
+    show_soql_queries: true
 ```
 
 ## Usage
 
-### Basic Usage
+### Basic Analysis
 
-1. Extract your Salesforce metadata:
+1. Extract Salesforce metadata:
 ```bash
 sfdx force:source:retrieve -x path/to/package.xml -r ./force-app
 ```
 
 2. Run the analyzer:
 ```bash
-poetry run python -m salesforce_analyzer analyze --project-path ./force-app --output-dir ./documentation
+poetry run python -m salesforce_analyzer analyze \
+    --source-path ./force-app \
+    --output-dir ./analysis
 ```
 
 ### Advanced Usage
 
-#### Analyzing Specific Components
-
+Analyze specific components with detailed options:
 ```bash
-# Analyze specific objects
 poetry run python -m salesforce_analyzer analyze \
-    --project-path ./force-app \
+    --source-path ./force-app \
     --objects Account,Contact \
-    --output-dir ./documentation
+    --include-dml \
+    --include-soql \
+    --track-sharing \
+    --output-dir ./analysis
+```
 
-# Generate execution path diagrams
+Generate execution path visualization:
+```bash
 poetry run python -m salesforce_analyzer visualize \
-    --project-path ./force-app \
+    --source-path ./force-app \
     --object Account \
     --trigger-context "before insert" \
-    --output-dir ./documentation
+    --show-dml \
+    --show-conditions \
+    --output-dir ./diagrams
 ```
 
-#### Configuration Options
+### Example Output
 
-Create a `config.yaml` file:
-```yaml
-llm:
-  model: "codellama/CodeLlama-7b-hf"
-  temperature: 0.1
-  max_length: 2048
+The analyzer generates several types of documentation:
 
-analysis:
-  include_internal_classes: false
-  parse_comments: true
-  follow_interfaces: true
-
-visualization:
-  diagram_type: "mermaid"
-  include_conditions: true
-  show_order: true
+1. Class Analysis
+```json
+{
+  "className": "AccountService",
+  "methods": [
+    {
+      "name": "updateAccounts",
+      "dmlOperations": [
+        {
+          "operation": "update",
+          "object": "Account",
+          "isBulk": true,
+          "lineNumber": 45
+        }
+      ],
+      "soqlQueries": [
+        {
+          "query": "SELECT Id, Name FROM Account",
+          "referencedObjects": ["Account"],
+          "lineNumber": 42
+        }
+      ]
+    }
+  ]
+}
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Memory Issues**
-```bash
-# Increase available memory for Python
-export PYTHON_MEMORY_LIMIT=8G
-```
-
-2. **GPU Issues**
-```bash
-# Check GPU availability
-python -c "import torch; print(torch.cuda.is_available())"
-```
-
-3. **Missing Dependencies**
-```bash
-poetry install --no-dev  # Install only production dependencies
-```
-
-### Getting Help
-
-- Check the [Issues](https://github.com/your-repo/salesforce-analyzer/issues) page
-- Run diagnostics:
-```bash
-poetry run python -m salesforce_analyzer diagnose
+2. Execution Path Diagram (Mermaid)
+```mermaid
+graph TD
+    A[Trigger: AccountTrigger] -->|before insert| B[AccountService.validateAccounts]
+    B --> C[AccountValidator.checkDuplicates]
+    C -->|SOQL| D[(Database)]
+    B --> E[AccountService.enrichData]
+    E -->|DML| F[(Database)]
 ```
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
+3. Install development dependencies:
+```bash
+poetry install --with dev
+```
+
 4. Run tests:
 ```bash
 poetry run pytest
 ```
+
 5. Submit a pull request
+
+## Troubleshooting
+
+### Common Issues
+
+1. Memory Issues
+```bash
+export PYTHON_MEMORY_LIMIT=8G
+```
+
+2. Parser Errors
+Check the log file at `logs/parser.log` for detailed error messages.
+
+3. Missing Dependencies
+```bash
+poetry install --no-dev
+```
 
 ## License
 
