@@ -1,0 +1,117 @@
+# Configuration for Salesforce Org Analyzer
+# Main configuration file controlling analyzer behavior and features
+
+# Analysis Configuration
+# Controls how code and metadata are parsed and analyzed
+analysis:
+  parser:
+    # Enable parsing of inner class definitions
+    include_inner_classes: true
+    # Extract and process annotations (@TestSetup, @InvocableMethod, etc.)
+    parse_annotations: true
+    # Track database operations (insert, update, delete, etc.)
+    track_dml: true
+    # Track SOQL query usage and patterns
+    track_soql: true
+    # Extract and process documentation comments
+    parse_doc_comments: true
+
+# Execution Path Analysis Configuration
+# Controls how automation execution paths are analyzed
+execution:
+  # Maximum depth for recursive execution path analysis
+  max_depth: 10
+  # Include workflow rules in analysis
+  include_workflow: true
+  # Include Process Builder flows in analysis
+  include_process_builder: true
+  # Include Lightning flows in analysis
+  include_flows: true
+  # Follow Apex method calls in analysis
+  follow_apex: true
+  # Maximum iterations for cyclic path detection
+  max_iterations: 100
+  # Track sharing rules and implications
+  track_sharing: true
+
+# Visualization Configuration
+# Controls how execution paths are visualized
+visualization:
+  # Use Mermaid for diagram generation
+  diagram_type: mermaid
+  # Show execution conditions in diagrams
+  include_conditions: true
+  # Show DML operations in diagrams
+  show_dml_operations: true
+  # Show SOQL queries in diagrams
+  show_soql_queries: true
+  # Show execution order in diagrams
+  show_order: true
+  # Color scheme for different automation types
+  style:
+    trigger: "#f96"          # Orange for triggers
+    flow: "#9cf"            # Blue for flows
+    process_builder: "#9f9"  # Green for Process Builder
+    workflow: "#f9f"        # Purple for workflows
+    apex: "#ff9"            # Yellow for Apex
+
+# LLM Configuration
+# Settings for the AI documentation generator
+llm:
+  # Model identifier for local LLM
+  model: "codellama/CodeLlama-7b-hf"
+  # Randomness in generation (0.0-1.0)
+  temperature: 0.1
+  # Maximum response length
+  max_length: 2048
+  # Template for documentation generation
+  prompt_template: |
+    Analyze the following Salesforce automation and provide documentation:
+    
+    {input}
+    
+    Focus on:
+    1. Purpose and functionality
+    2. Business impact
+    3. Technical considerations
+    4. Potential risks
+
+# Logging Configuration
+# Controls log output and format
+logging:
+  # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  level: INFO
+  # Log file location
+  file: logs/analyzer.log
+  # Log message format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Output Configuration
+# Controls documentation generation
+output:
+  # Output format (markdown supported)
+  format: markdown
+  # Include Mermaid diagrams in output
+  include_diagrams: true
+  # Format for diagram files
+  diagram_format: mermaid
+  # Output directory for generated documentation
+  output_dir: documentation
+
+# Metadata Configuration
+# Controls metadata retrieval and processing
+metadata:
+  # Metadata types to analyze
+  types:
+    - ApexClass           # Apex classes
+    - ApexTrigger         # Apex triggers
+    - Flow               # Lightning flows
+    - WorkflowRule       # Workflow rules
+    - ValidationRule     # Validation rules
+    - CustomObject       # Custom objects
+  # Maximum batch size for metadata retrieval
+  max_batch_size: 50
+  # Timeout for metadata operations (seconds)
+  timeout: 300
+  # Number of retry attempts for failed operations
+  retry_count: 3
