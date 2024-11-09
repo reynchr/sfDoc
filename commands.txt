@@ -1,0 +1,1 @@
+salesforce-analyzer --project-path /Users/reynchr/VSC\ Projects/ciTarget analyze --objects Account
